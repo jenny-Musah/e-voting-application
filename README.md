@@ -73,10 +73,9 @@ request(options, function (error, response) {
 # Login end-point
 *Log in for admin*
 1. This end-point allows admin log into the application.
-2. Admin does not need to register first before logging.
-3. A static login id and password has been made available for an admin.
-4. Admin with invalid login id or password would not be logged in.
-5. A code sample in Node JS using Axios is shown below
+2. A static login id and password has been made available for an admin.
+3. Admin with invalid login id or password would not be logged in.
+4. A code sample in Node JS using Axios is shown below
 ```
 var request = require('request');
 var options = {
@@ -102,6 +101,38 @@ request(options, function (error, response) {
 {
     "voteId": 7134133076596781502,
     "message": "Admin logged in successfully"
+}
+```
+# Login end-point
+*for nominees only*
+1. This end-point allows nominees log into the application.
+2. Nominees with invalid login id and password would not be logged in.
+3. A code sample in Node JS using Axios is shown below
+```
+var request = require('request');
+var options = {
+  'method': 'POST',
+  'url': 'localhost:8080/api/v1/nominee/login',
+  'headers': {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    "loginId": "53",
+    "password": "ec00729c-7NOMI#@"
+  })
+
+};
+request(options, function (error, response) {
+  if (error) throw new Error(error);
+  console.log(response.body);
+});
+```
+#  Response from login request
+*This is a sample of the response from the Login !!!*
+```
+{
+    "voteId": 2979259362382514928,
+    "message": "Login successful"
 }
 ```
 # Declare Election end-point

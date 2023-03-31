@@ -29,8 +29,6 @@ public class NomineeServiceImpl implements NomineeService{
         if(!Validator.isEmailAddressValid(nomineeDetailsRequest.getEmail()) || nomineeRepository.findNomineeByEmail(nomineeDetailsRequest.getEmail()) != null) throw new InvalidDetails("Invalid email address");
         String nomineePassword =  UUID.randomUUID().toString().subSequence(0,10).toString().concat("NOMI#@");
         Nominee savedNominee = nomineeRepository.save(createNominee(nomineeDetailsRequest,nomineePassword));
-        System.out.println(savedNominee.getLoginId());
-        System.out.println(nomineePassword);
         mailSender.send(nomineeDetailsRequest.getEmail(),mailSender.buildEmail(savedNominee.getLoginId(),nomineePassword)
         ,"Nominee login details");
         return savedNominee;
