@@ -9,17 +9,21 @@ import com.example.voting_app.data.repository.AdminRepository;
 import com.example.voting_app.service.adminService.AdminService;
 import com.example.voting_app.utils.exceptions.InvalidDetails;
 import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 import jdk.jfr.Name;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
+import org.springframework.test.context.TestPropertySource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+
 @SpringBootTest
+@TestPropertySource(locations = "classpath:test.properties")
+@Transactional
 public class AdminServiceTest {
 
     @Autowired
@@ -88,7 +92,7 @@ public class AdminServiceTest {
         creatElectionRequest.setEndsAt("04-01-2023");
        assertThrows(InvalidDetails.class, () -> adminService.createElection(creatElectionRequest));
     }
-@Test
+    @Test
     @Name("Test that admin can not create an election with an invalid details(password)")
     public void testThatAdminCanNotCreateElectionWithAnInvalidDetails() throws MessagingException {
         NomineeDetailsRequest nomineeDetailsRequest = new NomineeDetailsRequest("Jennifer", "Musah", "jennymusah9",

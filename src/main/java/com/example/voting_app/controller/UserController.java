@@ -1,7 +1,7 @@
 package com.example.voting_app.controller;
 
 
-import com.example.voting_app.data.dto.requests.UserLoginRequest;
+import com.example.voting_app.data.dto.requests.LoginRequest;
 import com.example.voting_app.data.dto.requests.UserRegisterRequest;
 import com.example.voting_app.service.userService.UserService;
 import jakarta.mail.MessagingException;
@@ -25,8 +25,8 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserLoginRequest userLoginRequest){
-        return new ResponseEntity<>(userService.login(userLoginRequest), HttpStatus.OK);
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest){
+        return new ResponseEntity<>(userService.login(loginRequest), HttpStatus.OK);
     }
 
 

@@ -1,6 +1,8 @@
 package com.example.voting_app.service.nomineeService;
 
+import com.example.voting_app.data.dto.requests.LoginRequest;
 import com.example.voting_app.data.dto.requests.NomineeDetailsRequest;
+import com.example.voting_app.data.dto.response.LoginResponse;
 import com.example.voting_app.data.models.Nominee;
 import com.example.voting_app.data.models.Roles;
 import com.example.voting_app.data.repository.NomineeRepository;
@@ -27,11 +29,20 @@ public class NomineeServiceImpl implements NomineeService{
         if(!Validator.isEmailAddressValid(nomineeDetailsRequest.getEmail()) || nomineeRepository.findNomineeByEmail(nomineeDetailsRequest.getEmail()) != null) throw new InvalidDetails("Invalid email address");
         String nomineePassword =  UUID.randomUUID().toString().subSequence(0,10).toString().concat("NOMI#@");
         Nominee savedNominee = nomineeRepository.save(createNominee(nomineeDetailsRequest,nomineePassword));
+        System.out.println(savedNominee.getLoginId());
+        System.out.println(nomineePassword);
         mailSender.send(nomineeDetailsRequest.getEmail(),mailSender.buildEmail(savedNominee.getLoginId(),nomineePassword)
         ,"Nominee login details");
         return savedNominee;
     }
 
+    @Override public LoginResponse login(LoginRequest loginRequest) {
+        Nominee savedNominee = nomineeRepository.findById(loginRequest.getLoginId()).orElseThrow(() -> new InvalidDetails("Invalid details"));
+        if(!BCrypt.checkpw(loginRequest.getPassword(),savedNominee.getPassword())) throw new InvalidDetails("Invalid details");
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setVoteId(savedNominee.getVoteId()); loginResponse.setMessage("Login successful");
+        return loginResponse;
+    }
 
     private long generateId(){
         Random random = new Random();

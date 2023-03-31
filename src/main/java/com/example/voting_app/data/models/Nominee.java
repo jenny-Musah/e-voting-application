@@ -8,7 +8,7 @@ import lombok.Data;
 @Entity
 public class Nominee {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long loginId;
     private String password;
     private String email;

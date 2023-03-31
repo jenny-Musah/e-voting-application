@@ -6,15 +6,20 @@ import com.example.voting_app.data.models.Election;
 import com.example.voting_app.service.electionService.ElectionService;
 import com.example.voting_app.utils.exceptions.InvalidDetails;
 import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 import jdk.jfr.Name;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
 @SpringBootTest
+@TestPropertySource(locations = "classpath:test.properties")
+@Transactional
 public class ElectionServiceTest {
 
     @Autowired

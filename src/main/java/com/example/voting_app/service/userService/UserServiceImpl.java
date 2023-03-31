@@ -1,18 +1,16 @@
 package com.example.voting_app.service.userService;
 
-import com.example.voting_app.data.dto.requests.UserLoginRequest;
+import com.example.voting_app.data.dto.requests.LoginRequest;
 import com.example.voting_app.data.dto.requests.UserRegisterRequest;
 import com.example.voting_app.data.dto.response.LoginResponse;
 import com.example.voting_app.data.dto.response.Response;
 import com.example.voting_app.data.models.Roles;
 import com.example.voting_app.data.models.User;
 import com.example.voting_app.data.repository.UserRepository;
-import com.example.voting_app.service.userService.UserService;
 import com.example.voting_app.utils.Validator;
 import com.example.voting_app.utils.exceptions.InvalidDetails;
 import com.example.voting_app.utils.mailServices.MailSender;
 import jakarta.mail.MessagingException;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,9 +39,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public LoginResponse login(UserLoginRequest userLoginRequest) {
-        User savedUser = userRepository.findById(userLoginRequest.getLoginId()).orElseThrow(() -> new InvalidDetails("Invalid details"));
-        if(!BCrypt.checkpw(userLoginRequest.getPassword(),savedUser.getPassword())) throw new InvalidDetails("Invalid details");
+    public LoginResponse login(LoginRequest loginRequest) {
+        User savedUser = userRepository.findById(loginRequest.getLoginId()).orElseThrow(() -> new InvalidDetails("Invalid details"));
+        if(!BCrypt.checkpw(loginRequest.getPassword(),savedUser.getPassword())) throw new InvalidDetails("Invalid details");
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setMessage("Login successful"); loginResponse.setVoteId(savedUser.getVoteId());
         return loginResponse;

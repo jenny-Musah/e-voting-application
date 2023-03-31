@@ -1,6 +1,6 @@
 package com.example.voting_app.service;
 
-import com.example.voting_app.data.dto.requests.UserLoginRequest;
+import com.example.voting_app.data.dto.requests.LoginRequest;
 import com.example.voting_app.data.dto.requests.UserRegisterRequest;
 import com.example.voting_app.data.dto.response.LoginResponse;
 import com.example.voting_app.data.dto.response.Response;
@@ -8,16 +8,22 @@ import com.example.voting_app.data.repository.UserRepository;
 import com.example.voting_app.service.userService.UserService;
 import com.example.voting_app.utils.exceptions.InvalidDetails;
 import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 import jdk.jfr.Name;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
+@TestPropertySource(locations = "classpath:test.properties")
+@Transactional
 public class UserServiceTest {
 
     private UserRegisterRequest userRegisterRequest;
@@ -61,20 +67,20 @@ public class UserServiceTest {
         userRegisterRequest.setPassword("Jennymush#123");
         userRegisterRequest.setEmailAddress("jennymusah99@gmail.com");
         Response response = userService.registerUser(userRegisterRequest);
-        UserLoginRequest userLoginRequest = new UserLoginRequest();
-        userLoginRequest.setLoginId(response.getLoginId());
-        userLoginRequest.setPassword("Jennymush#123");
-        LoginResponse response2 = userService.login(userLoginRequest);
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setLoginId(response.getLoginId());
+        loginRequest.setPassword("Jennymush#123");
+        LoginResponse response2 = userService.login(loginRequest);
         assertEquals("Login successful", response2.getMessage());
     }
     @Test
     @Name("Test that user can not login with invalid login id")
     public void testThatUserCanNotLoginWithInvalidDetails() throws MessagingException {
         testThatUserCanRegister();
-        UserLoginRequest userLoginRequest = new UserLoginRequest();
-        userLoginRequest.setLoginId(3451818290200l);
-        userLoginRequest.setPassword("Jennymush#123");
-       assertThrows(InvalidDetails.class, () -> userService.login(userLoginRequest));
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setLoginId(3451818290200l);
+        loginRequest.setPassword("Jennymush#123");
+       assertThrows(InvalidDetails.class, () -> userService.login(loginRequest));
     }
 
     @Test
@@ -84,10 +90,10 @@ public class UserServiceTest {
         userRegisterRequest.setPassword("Jennymush#123");
         userRegisterRequest.setEmailAddress("jennymusah99@gmail.com");
         Response response = userService.registerUser(userRegisterRequest);
-        UserLoginRequest userLoginRequest = new UserLoginRequest();
-        userLoginRequest.setLoginId(response.getLoginId());
-        userLoginRequest.setPassword("Jennymu");
-        assertThrows(InvalidDetails.class, () -> userService.login(userLoginRequest));
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setLoginId(response.getLoginId());
+        loginRequest.setPassword("Jennymu");
+        assertThrows(InvalidDetails.class, () -> userService.login(loginRequest));
     }
 
 
