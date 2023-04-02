@@ -9,6 +9,5 @@ import jakarta.mail.MessagingException;
 public interface UserService {
 
     Response registerUser(UserRegisterRequest userRegisterRequest) throws MessagingException;
-
     LoginResponse login(LoginRequest loginRequest);
 }

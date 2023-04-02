@@ -15,7 +15,9 @@ public class Admin {
     private long id;
     private long loginId;
     private String password;
-    private long voteId;
     @ElementCollection
     private List<Roles> adminRoles = new ArrayList<>();
+    @OneToOne
+    @Enumerated
+    private VoterCard voterCard;
 }

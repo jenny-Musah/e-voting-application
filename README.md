@@ -65,7 +65,7 @@ request(options, function (error, response) {
   *This is a sample of the response from the Login !!!*
 ```
 {
-    "loginId": 0,
+    "usersId": 1,
     "statusCode": 200,
     "message": "Login successful"
 }
@@ -99,8 +99,9 @@ request(options, function (error, response) {
 *This is a sample of the response from the Login !!!*
 ```
 {
-    "voteId": 7134133076596781502,
-    "message": "Admin logged in successfully"
+    "usersId": 10,
+    "statusCode": 200,
+    "message": "Login successful"
 }
 ```
 # Login end-point
@@ -131,7 +132,8 @@ request(options, function (error, response) {
 *This is a sample of the response from the Login !!!*
 ```
 {
-    "voteId": 2979259362382514928,
+    "usersId": 8,
+    "statusCode": 200,
     "message": "Login successful"
 }
 ```
@@ -177,11 +179,44 @@ request(options, function (error, response) {
 });
 ```
 # Response from declare election request
-*This is a sample of the response from declare election end-point !!!
+*This is a sample of the response from declare election end-point !!!*
 ```
 {
     "electionId": 1,
     "message": "Successfully declared an election"
 }
 ```
+# Vote end-point
+*for admin, users, nominee*
+1. This end-point allows admin, users(voters) and nominees to vote a nominee of their choice in any available election.
+2. This end-point takes a valid election id and nominee id.
+3. This end-point does not permit voting until election start time.
+4. This end-point does not permit voting twice in any election.
+5. A code sample in Node JS using Axios is shown below
+```
+var request = require('request');
+var options = {
+  'method': 'POST',
+  'url': 'localhost:8080/api/v1/election/vote/1',
+  'headers': {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    "nomineeId": 7363598825774883000,
+    "electionId": 1
+  })
 
+};
+request(options, function (error, response) {
+  if (error) throw new Error(error);
+  console.log(response.body);
+});
+```
+# Response from vote request
+*This is a sample of the response from declare election end-point !!!*
+```
+{
+    "electionId": 1,
+    "message": "Thank you for voting Jennifer"
+}
+```

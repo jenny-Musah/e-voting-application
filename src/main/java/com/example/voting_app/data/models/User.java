@@ -12,10 +12,13 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private long id;
     private long loginId;
     private String emailAddress;
     private String password;
-    private long voteId;
+    @OneToOne
+    @Enumerated
+    private VoterCard voterCard;
     @ElementCollection
     private List<Roles> usersRoles = new ArrayList<>();
 }

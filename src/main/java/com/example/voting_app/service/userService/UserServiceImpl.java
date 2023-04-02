@@ -6,7 +6,10 @@ import com.example.voting_app.data.dto.response.LoginResponse;
 import com.example.voting_app.data.dto.response.Response;
 import com.example.voting_app.data.models.Roles;
 import com.example.voting_app.data.models.User;
+import com.example.voting_app.data.models.VoterCard;
 import com.example.voting_app.data.repository.UserRepository;
+import com.example.voting_app.data.repository.VotersCardRepository;
+import com.example.voting_app.service.votersService.VotersService;
 import com.example.voting_app.utils.Validator;
 import com.example.voting_app.utils.exceptions.InvalidDetails;
 import com.example.voting_app.utils.mailServices.MailSender;
@@ -23,6 +26,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private VotersService votersService;
 
     @Autowired
     private MailSender mailSender;
@@ -33,33 +38,41 @@ public class UserServiceImpl implements UserService {
         if(!Validator.isPasswordValid(userRegisterRequest.getPassword())) throw new InvalidDetails("Invalid details");
         User savedUser = userRepository.save(creatUser(userRegisterRequest));
         mailSender.send(savedUser.getEmailAddress(),mailSender.buildEmail(savedUser.getLoginId(),userRegisterRequest.getPassword()),"Login Details");
-        Response response = new Response();
-        response.setMessage("Registration successful, check your mail for login details"); response.setLoginId(savedUser.getLoginId());  response.setStatusCode(HttpStatus.OK.value());
-        return response;
+        return response(savedUser.getLoginId(),HttpStatus.OK.value(), "Registration successful, check your mail for login details");
     }
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
-        User savedUser = userRepository.findById(loginRequest.getLoginId()).orElseThrow(() -> new InvalidDetails("Invalid details"));
+        User savedUser = userRepository.findUserByLoginId(loginRequest.getLoginId()).orElseThrow(() -> new InvalidDetails("Invalid details"));
         if(!BCrypt.checkpw(loginRequest.getPassword(),savedUser.getPassword())) throw new InvalidDetails("Invalid details");
-        LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setMessage("Login successful"); loginResponse.setVoteId(savedUser.getVoteId());
+       LoginResponse loginResponse = new LoginResponse();
+       loginResponse.setUsersId(savedUser.getId());
+       loginResponse.setStatusCode(HttpStatus.OK.value());
+       loginResponse.setMessage("Login successful");
         return loginResponse;
     }
 
+    private Response response(long loginId, int statusCode, String message ){
+        Response response = new Response();
+        response.setMessage(message); response.setStatusCode(statusCode);response.setLoginId(loginId);
+        return response;
+    }
     private User creatUser(UserRegisterRequest userRegisterRequest){
         User user = new User();
         user.setEmailAddress(userRegisterRequest.getEmailAddress());
-        user.setPassword(BCrypt.hashpw(userRegisterRequest.getPassword(),BCrypt.gensalt()));
-        user.setVoteId(generateId());
+        user.setPassword(BCrypt.hashpw(userRegisterRequest.getPassword(),BCrypt.gensalt()));;
         user.getUsersRoles().add(Roles.VOTER);
-        return user;
+        user.setLoginId(generateId());
+        User savedUser= userRepository.save(user);
+        savedUser.setVoterCard(votersService.creatVotersCard(savedUser.getId()));
+        return savedUser;
     }
-
     private long generateId(){
         Random random = new Random();
         return Math.abs(random.nextLong());
     }
+
+
 
 
 }

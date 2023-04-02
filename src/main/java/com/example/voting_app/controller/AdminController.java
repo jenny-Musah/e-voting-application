@@ -26,4 +26,6 @@ public class AdminController {
     public ResponseEntity<?> declareElection(@RequestBody DeclareElectionRequest declareElectionRequest) throws MessagingException {
         return new ResponseEntity<>(adminService.createElection(declareElectionRequest),HttpStatus.OK);
     }
+
+
 }

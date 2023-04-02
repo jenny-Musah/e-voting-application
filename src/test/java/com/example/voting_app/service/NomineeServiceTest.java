@@ -57,4 +57,16 @@ public class NomineeServiceTest {
         loginRequest.setPassword("4e84cd2e-9NOMI#@");
        assertThrows( InvalidDetails.class,() ->nomineeService.login(loginRequest));
     }
+    @Test
+    @Name("Test that vote can be added to nominee")
+    public  void testThatVoteCanBeAddedToNominee() throws MessagingException {
+        NomineeDetailsRequest addNominee = new NomineeDetailsRequest(
+                "Jenny", "Mercy","jennymusah@67.gmail.com",
+                "class captain");
+        Nominee nominee = nomineeService.addNominee(addNominee);
+        assertEquals(0, nominee.getVotes());
+        nomineeService.addVote(nominee.getNomineeId());
+        assertEquals(1, nominee.getVotes());
+    }
+
 }

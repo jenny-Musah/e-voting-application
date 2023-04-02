@@ -17,7 +17,10 @@ public class Election {
     private long id;
     @OneToMany
     private List<Nominee> listOfNominee = new ArrayList<>();
+    @OneToMany
+    private List<VoterCard> listOfVoters = new ArrayList<>();
     private String electionName;
     private LocalDate startAt;
     private LocalDate endAt;
+    private boolean isActivated;
 }

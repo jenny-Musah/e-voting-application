@@ -12,11 +12,9 @@ import jakarta.transaction.Transactional;
 import jdk.jfr.Name;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -57,7 +55,7 @@ public class UserServiceTest {
         testThatUserCanRegister();
         userRegisterRequest.setPassword("Jennymush#123");
         userRegisterRequest.setEmailAddress("jennymusah99@gmail.com");
-        assertThrows(InvalidDetails.class,() ->userService.registerUser(userRegisterRequest));
+        assertThrows(InvalidDetails.class,() -> userService.registerUser(userRegisterRequest));
     }
 
     @Test
