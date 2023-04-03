@@ -15,6 +15,7 @@ import com.example.voting_app.utils.exceptions.InvalidDetails;
 import jakarta.mail.MessagingException;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 

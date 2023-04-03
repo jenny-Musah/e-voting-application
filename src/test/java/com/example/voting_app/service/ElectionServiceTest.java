@@ -78,8 +78,8 @@ public class ElectionServiceTest {
         creatElectionRequest.setElectionName("class captain election");
         creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest);
         creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest2);
-        creatElectionRequest.setStartAt("02-04-2023");
-        creatElectionRequest.setEndsAt("02-04-2023");
+        creatElectionRequest.setStartAt("08-04-2023");
+        creatElectionRequest.setEndsAt("09-04-2023");
         Election election = electionService.createElection(creatElectionRequest);
         AddVoteRequest addVoteRequest = new AddVoteRequest();
         long nomineeID = 0;
@@ -105,8 +105,8 @@ public class ElectionServiceTest {
       creatElectionRequest.setElectionName("class captain election");
       creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest);
       creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest2);
-      creatElectionRequest.setStartAt("02-04-2023");
-      creatElectionRequest.setEndsAt("02-04-2023");
+      creatElectionRequest.setStartAt("08-04-2023");
+      creatElectionRequest.setEndsAt("09-04-2023");
       Election election = electionService.createElection(creatElectionRequest);
       election.setActivated(true);
       AddVoteRequest addVoteRequest = new AddVoteRequest();
@@ -132,8 +132,8 @@ public class ElectionServiceTest {
       creatElectionRequest.setElectionName("class captain election");
       creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest);
       creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest2);
-      creatElectionRequest.setStartAt("02-04-2023");
-      creatElectionRequest.setEndsAt("02-04-2023");
+    creatElectionRequest.setStartAt("08-04-2023");
+    creatElectionRequest.setEndsAt("09-04-2023");
       Election election = electionService.createElection(creatElectionRequest);
       election.setActivated(true);
       AddVoteRequest addVoteRequest = new AddVoteRequest();
@@ -167,8 +167,8 @@ public class ElectionServiceTest {
       creatElectionRequest.setElectionName("class captain election");
       creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest);
       creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest2);
-      creatElectionRequest.setStartAt("02-04-2023");
-      creatElectionRequest.setEndsAt("02-04-2023");
+      creatElectionRequest.setStartAt("08-04-2023");
+      creatElectionRequest.setEndsAt("09-04-2023");
       Election election = electionService.createElection(creatElectionRequest);
       election.setActivated(true);
       AddVoteRequest addVoteRequest = new AddVoteRequest();
@@ -197,8 +197,8 @@ public class ElectionServiceTest {
       creatElectionRequest.setElectionName("class captain election");
       creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest);
       creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest2);
-      creatElectionRequest.setStartAt("02-04-2023");
-      creatElectionRequest.setEndsAt("02-04-2023");
+      creatElectionRequest.setStartAt("08-04-2023");
+      creatElectionRequest.setEndsAt("09-04-2023");
       Election election = electionService.createElection(creatElectionRequest);
       election.setActivated(true);
       AddVoteRequest addVoteRequest = new AddVoteRequest();
@@ -224,8 +224,8 @@ public class ElectionServiceTest {
         creatElectionRequest.setElectionName("class captain election");
         creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest);
         creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest2);
-        creatElectionRequest.setStartAt("02-04-2023");
-        creatElectionRequest.setEndsAt("02-04-2023");
+        creatElectionRequest.setStartAt("08-04-2023");
+        creatElectionRequest.setEndsAt("09-04-2023");
         Election election = electionService.createElection(creatElectionRequest);
         election.setActivated(true);
         AddVoteRequest addVoteRequest = new AddVoteRequest();
