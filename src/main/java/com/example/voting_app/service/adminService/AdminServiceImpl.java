@@ -57,9 +57,5 @@ public class AdminServiceImpl implements AdminService{
         admin.setVoterCard(votersService.creatVotersCard(admin.getId()));
         return adminRepository.save(admin);
     }
-    private Response response(long loginId, int statusCode, String message ){
-        Response response = new Response();
-        response.setMessage(message); response.setStatusCode(statusCode);response.setLoginId(loginId);
-        return response;
-    }
+
 }

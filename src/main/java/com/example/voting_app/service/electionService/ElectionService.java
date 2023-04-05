@@ -11,4 +11,5 @@ public interface ElectionService {
     Election createElection(DeclareElectionRequest declareElectionRequest) throws MessagingException;
 
     ElectionResponse addVote(AddVoteRequest addVoteRequest, long userId);
+
 }

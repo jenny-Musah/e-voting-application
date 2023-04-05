@@ -1,9 +1,9 @@
 package com.example.voting_app.service.nomineeService;
 
 import com.example.voting_app.data.dto.requests.LoginRequest;
-import com.example.voting_app.data.dto.requests.NomineeDetailsRequest;
+import com.example.voting_app.data.dto.requests.UploadPortfolioRequest;
 import com.example.voting_app.data.dto.response.LoginResponse;
-import com.example.voting_app.data.dto.response.Response;
+import com.example.voting_app.data.dto.response.UploadPortfolioResponse;
 import com.example.voting_app.data.models.Nominee;
 import com.example.voting_app.data.models.Roles;
 import com.example.voting_app.data.repository.NomineeRepository;
@@ -28,23 +28,29 @@ public class NomineeServiceImpl implements NomineeService{
 
     @Autowired
     private VotersService votersService;
+
+    @Autowired
+    private NomineePortfolioService nomineePortfolioService;
     @Autowired
     private MailSender mailSender;
     @Override
-    public Nominee addNominee(NomineeDetailsRequest nomineeDetailsRequest) throws MessagingException {
-        if(!Validator.isEmailAddressValid(nomineeDetailsRequest.getEmail()) || nomineeRepository.findNomineeByEmail(nomineeDetailsRequest.getEmail()) != null) throw new InvalidDetails("Invalid email address");
+    public Nominee addNominee(String  nomineeEmails) throws MessagingException {
+        if(!Validator.isEmailAddressValid(nomineeEmails) || nomineeRepository.findNomineeByEmail(nomineeEmails) != null) throw new InvalidDetails("Invalid email address");
         String nomineePassword =  UUID.randomUUID().toString().subSequence(0,10).toString().concat("NOMI#@");
-        Nominee savedNominee = nomineeRepository.save(createNominee(nomineeDetailsRequest,nomineePassword));
-        mailSender.send(nomineeDetailsRequest.getEmail(),mailSender.buildEmail(savedNominee.getLoginId(),nomineePassword)
+        Nominee savedNominee = nomineeRepository.save(createNominee(nomineeEmails,nomineePassword));
+        mailSender.send(nomineeEmails,mailSender.buildEmail(savedNominee.getLoginId(),nomineePassword)
         ,"Nominee login details");
         return savedNominee;
     }
 
-    @Override
-    public void addVote(long nomineeId) {
-    Nominee nominee = nomineeRepository.findNomineeByNomineeId(nomineeId).orElseThrow(()-> new InvalidDetails("Nominee Id is invalid"));
-    nominee.setVotes(nominee.getVotes() + 1);
-    nomineeRepository.save(nominee);
+    @Override public UploadPortfolioResponse uploadPortfolio(UploadPortfolioRequest uploadPortfolioRequest,long id) {
+        Nominee nominee = nomineeRepository.findById(id).orElseThrow(()-> new InvalidDetails("Invalid nominee id"));
+        nominee.setNomineePortfolio(nomineePortfolioService.uploadPortfolio(uploadPortfolioRequest));
+        Nominee updatedNominee = nomineeRepository.save(nominee);
+        UploadPortfolioResponse uploadPortfolioResponse = new UploadPortfolioResponse();
+        uploadPortfolioResponse.setNomineeId(updatedNominee.getNomineePortfolio().getNomineeId());
+        uploadPortfolioResponse.setMessage("Portfolio updated successfully");
+        return uploadPortfolioResponse;
     }
 
     @Override public LoginResponse login(LoginRequest loginRequest) {
@@ -53,28 +59,31 @@ public class NomineeServiceImpl implements NomineeService{
         return response(savedNominee.getId(), HttpStatus.OK.value(),"Login successful");
     }
 
+    @Override public void addVote(long nomineeId) {
+     nomineePortfolioService.findPortfolio(nomineeId);
+           nomineePortfolioService.addVote(nomineeId);
+    }
+
+    @Override public Nominee findNominee(String nomineeEmail) {
+        return nomineeRepository.findNomineeByEmail(nomineeEmail);
+    }
+
     private LoginResponse response(long userId, int statusCode, String message ){
         LoginResponse response = new LoginResponse();
         response.setMessage(message); response.setStatusCode(statusCode);response.setUsersId(userId);
         return response;
     }
 
-    private Nominee createNominee(NomineeDetailsRequest nomineeDetailsRequest, String password){
+    private Nominee createNominee(String email, String password){
         Nominee nominee = new Nominee();
-        nominee.setEmail(nomineeDetailsRequest.getEmail());
-        nominee.setPassword(BCrypt.hashpw(password,BCrypt.gensalt())); nominee.setLastName(nomineeDetailsRequest.getLastName());
-        nominee.setFirstName(nomineeDetailsRequest.getFirstName());
+        nominee.setEmail(email);
+        nominee.setPassword(BCrypt.hashpw(password,BCrypt.gensalt()));
         nominee.setLoginId(generateId());
         nominee.setRoles(Roles.NOMINEE);
-        nominee.setNomineeId(generateId());
-        nominee.setPosition(nomineeDetailsRequest.getPosition());
         Nominee savedNominee = nomineeRepository.save(nominee);
         savedNominee.setVoterCard(votersService.creatVotersCard(savedNominee.getId()));
         return savedNominee;
     }
-
-
-
 
     private long generateId(){
         Random random = new Random();

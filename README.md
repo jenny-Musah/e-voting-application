@@ -140,10 +140,11 @@ request(options, function (error, response) {
 # Declare Election end-point
 *for admins only*
 1. This end-point allows admin declare or create an election.
-2. This end-point takes a list of nominees and adds them to the declared election.
+2. This end-point takes a list of nominees email and adds them to the declared election.
 3. Admin can not add nominees with invalid details to election.
-4. Admin can not create election with invalid dates.
-5. A code sample in Node JS using Axios is shown below
+4. Admin can not add a nominee twice to an election
+5. Admin can not create election with invalid dates.
+6. A code sample in Node JS using Axios is shown below
 ```
 var request = require('request');
 var options = {
@@ -186,13 +187,49 @@ request(options, function (error, response) {
     "message": "Successfully declared an election"
 }
 ```
+# Upload portfolio end-point
+*for nominees only*
+1. This end-point allows added nominees upload their portfolios.
+2. This end-point requires a request body of upload portfolio request and a path variable of id.
+3. A code sample in Node JS using Axios is shown below
+```
+var request = require('request');
+var options = {
+  'method': 'POST',
+  'url': 'localhost:8080/api/v1/nominee/portfolio/2',
+  'headers': {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    "firstName": "Mary",
+    "lastName": " jane",
+    "position": "Class captain",
+    "personalStatement": "i am a natral born",
+    "occupation": "Doctor"
+  })
+
+};
+request(options, function (error, response) {
+  if (error) throw new Error(error);
+  console.log(response.body);
+});
+```
+# Response from upload portfolio request
+*This is a sample of the response from declare election end-point !!!*
+```
+{
+    "nomineeId": 364766789385150039,
+    "message": "Portfolio updated successfully"
+}
+```
 # Vote end-point
 *for admin, users, nominee*
 1. This end-point allows admin, users(voters) and nominees to vote a nominee of their choice in any available election.
 2. This end-point takes a valid election id and nominee id.
 3. This end-point does not permit voting until election start time.
-4. This end-point does not permit voting twice in any election.
-5. A code sample in Node JS using Axios is shown below
+4. This end-point does not permit voting for a nominee without a portfolio
+5. This end-point does not permit voting twice in any election.
+6. A code sample in Node JS using Axios is shown below
 ```
 var request = require('request');
 var options = {

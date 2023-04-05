@@ -2,12 +2,12 @@ package com.example.voting_app.service.electionService;
 
 import com.example.voting_app.data.dto.requests.AddVoteRequest;
 import com.example.voting_app.data.dto.requests.DeclareElectionRequest;
-import com.example.voting_app.data.dto.requests.NomineeDetailsRequest;
 import com.example.voting_app.data.dto.response.ElectionResponse;
 import com.example.voting_app.data.models.Election;
 import com.example.voting_app.data.models.Nominee;
 import com.example.voting_app.data.models.VoterCard;
 import com.example.voting_app.data.repository.ElectionRepository;
+import com.example.voting_app.service.nomineeService.NomineePortfolioService;
 import com.example.voting_app.service.nomineeService.NomineeService;
 import com.example.voting_app.service.votersService.VotersService;
 import com.example.voting_app.utils.Validator;
@@ -34,6 +34,9 @@ public class ElectionServiceImpl implements ElectionService{
 
     @Autowired
     private ElectionRepository electionRepository;
+
+    @Autowired
+    private NomineePortfolioService nomineePortfolioService;
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     @Override
     public Election createElection(DeclareElectionRequest declareElectionRequest) throws MessagingException {
@@ -44,8 +47,9 @@ public class ElectionServiceImpl implements ElectionService{
         election.setElectionName(declareElectionRequest.getElectionName());
         election.setStartAt(LocalDate.parse(declareElectionRequest.getStartAt(),formatter));
         election.setEndAt(LocalDate.parse(declareElectionRequest.getEndsAt(),formatter));
-        for(NomineeDetailsRequest nomineeDetailsRequest : declareElectionRequest.getListOfNominee()){
-            Nominee nominee = nomineeService.addNominee(nomineeDetailsRequest);
+        for(String nomineeEmail : declareElectionRequest.getListOfNominee()){
+            if(nomineeService.findNominee(nomineeEmail) != null) throw new InvalidDetails("Nominee is already added");
+            Nominee nominee = nomineeService.addNominee(nomineeEmail);
             election.getListOfNominee().add(nominee);
         }
         return electionRepository.save(election);
@@ -59,11 +63,12 @@ public class ElectionServiceImpl implements ElectionService{
             if(voterCard1.getVotersId() == voterCard.getVotersId()) throw new InvalidDetails("Sorry, vote can be casted just once");
         }
         for(Nominee nominee : declaredElection.getListOfNominee()){
-            if(nominee.getNomineeId() == addVoteRequest.getNomineeId()){
-                nomineeService.addVote(nominee.getNomineeId());
+            if(nominee.getNomineePortfolio() ==null) throw new InvalidDetails("Nominee has no portfolio therefore can not be voted has no nominee id exist");
+            if(nominee.getNomineePortfolio().getNomineeId() == addVoteRequest.getNomineeId()){
+                nomineePortfolioService.addVote(nominee.getNomineePortfolio().getNomineeId());
                 declaredElection.getListOfVoters().add(voterCard);
                 electionRepository.save(declaredElection);
-                return new ElectionResponse(declaredElection.getId(),"Thank you for voting " + nominee.getFirstName());
+                return new ElectionResponse(declaredElection.getId(),"Thank you for voting " + nominee.getNomineePortfolio().getFirstName());
             }
         }
         return new ElectionResponse(declaredElection.getId(),addVoteRequest.getNomineeId() + ", is invalid.");

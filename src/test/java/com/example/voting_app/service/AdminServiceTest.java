@@ -3,7 +3,6 @@ package com.example.voting_app.service;
 
 import com.example.voting_app.data.dto.requests.AdminLoginRequest;
 import com.example.voting_app.data.dto.requests.DeclareElectionRequest;
-import com.example.voting_app.data.dto.requests.NomineeDetailsRequest;
 import com.example.voting_app.data.dto.response.ElectionResponse;
 import com.example.voting_app.data.dto.response.LoginResponse;
 import com.example.voting_app.data.repository.AdminRepository;
@@ -65,30 +64,22 @@ public class AdminServiceTest {
     @Test
     @Name("Test that admin can create election")
     public void testThatAdminCanCreateElection() throws MessagingException {
-        NomineeDetailsRequest nomineeDetailsRequest = new NomineeDetailsRequest("Jennifer", "Musah", "jennymusah69@gmail.com",
-                "Class captain");
-        NomineeDetailsRequest nomineeDetailsRequest2 = new NomineeDetailsRequest("Mary", "Jane", "maryjane@gmail.com", "Class captain");
-
         DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
         creatElectionRequest.setElectionName("class captain election");
-        creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest);
-        creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest2);
-        creatElectionRequest.setStartAt("04-04-2023");
-        creatElectionRequest.setEndsAt("04-04-2023");
+        creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
+        creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
+        creatElectionRequest.setStartAt("10-04-2023");
+        creatElectionRequest.setEndsAt("11-04-2023");
         ElectionResponse electionResponse = adminService.createElection(creatElectionRequest);
         assertEquals("Successfully declared an election", electionResponse.getMessage());
     }
  @Test
     @Name("Test that admin can not create an election with an invalid date")
     public void testThatAdminCanNotCreateElectionWithAnInvalidDate() throws MessagingException {
-        NomineeDetailsRequest nomineeDetailsRequest = new NomineeDetailsRequest("Jennifer", "Musah", "jennymusah99@gmail.com",
-                "Class captain");
-        NomineeDetailsRequest nomineeDetailsRequest2 = new NomineeDetailsRequest("Mary", "Jane", "maryjane@gmail.com", "Class captain");
-
         DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
         creatElectionRequest.setElectionName("class captain election");
-        creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest);
-        creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest2);
+        creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
+        creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
         creatElectionRequest.setStartAt("04-01-2023");
         creatElectionRequest.setEndsAt("04-01-2023");
        assertThrows(InvalidDetails.class, () -> adminService.createElection(creatElectionRequest));
@@ -96,14 +87,10 @@ public class AdminServiceTest {
     @Test
     @Name("Test that admin can not create an election with an invalid details(password)")
     public void testThatAdminCanNotCreateElectionWithAnInvalidDetails() throws MessagingException {
-        NomineeDetailsRequest nomineeDetailsRequest = new NomineeDetailsRequest("Jennifer", "Musah", "jennymusah9",
-                "Class captain");
-        NomineeDetailsRequest nomineeDetailsRequest2 = new NomineeDetailsRequest("Mary", "Jane", "maryjane@gmail.com", "Class captain");
-
         DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
         creatElectionRequest.setElectionName("class captain election");
-        creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest);
-        creatElectionRequest.getListOfNominee().add(nomineeDetailsRequest2);
+        creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
+        creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
         creatElectionRequest.setStartAt("04-01-2023");
         creatElectionRequest.setEndsAt("04-01-2023");
        assertThrows(InvalidDetails.class, () -> adminService.createElection(creatElectionRequest));
