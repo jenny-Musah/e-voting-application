@@ -257,7 +257,7 @@ request(options, function (error, response) {
     "message": "Thank you for voting Jennifer"
 }
 ```
-# Add nominee 
+# Add nominee request
 *for admins only*
 1. This end-point allows admin to add nominee to an election.
 2. This end-point takes a valid election id and nominee emailAddress.
