@@ -1,5 +1,6 @@
 package com.example.voting_app.service.adminService;
 
+import com.example.voting_app.data.dto.requests.AddNomineeRequest;
 import com.example.voting_app.data.dto.requests.AdminLoginRequest;
 import com.example.voting_app.data.dto.requests.DeclareElectionRequest;
 import com.example.voting_app.data.dto.response.ElectionResponse;
@@ -7,6 +8,7 @@ import com.example.voting_app.data.dto.response.LoginResponse;
 import com.example.voting_app.data.dto.response.Response;
 import com.example.voting_app.data.models.Admin;
 import com.example.voting_app.data.models.Election;
+import com.example.voting_app.data.models.Nominee;
 import com.example.voting_app.data.models.Roles;
 import com.example.voting_app.data.repository.AdminRepository;
 import com.example.voting_app.service.electionService.ElectionService;

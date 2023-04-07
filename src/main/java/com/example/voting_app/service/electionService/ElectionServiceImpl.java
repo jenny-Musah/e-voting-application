@@ -1,5 +1,6 @@
 package com.example.voting_app.service.electionService;
 
+import com.example.voting_app.data.dto.requests.AddNomineeRequest;
 import com.example.voting_app.data.dto.requests.AddVoteRequest;
 import com.example.voting_app.data.dto.requests.DeclareElectionRequest;
 import com.example.voting_app.data.dto.response.ElectionResponse;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 @Service
 @EnableScheduling
@@ -72,6 +74,17 @@ public class ElectionServiceImpl implements ElectionService{
             }
         }
         return new ElectionResponse(declaredElection.getId(),addVoteRequest.getNomineeId() + ", is invalid.");
+    }
+
+    @Override public String addNominee(AddNomineeRequest addNomineeRequest) throws MessagingException {
+        Election election = electionRepository.findById(addNomineeRequest.getElectionId()).orElseThrow(() ->
+                new InvalidDetails("Election with " + addNomineeRequest.getElectionId() +" does not exist"));
+        for(Nominee nominee : election.getListOfNominee())
+            if(Objects.equals(nominee.getEmail(), addNomineeRequest.getNomineeMali())) throw  new InvalidDetails("Nominee is already added");
+        Nominee nominee = nomineeService.addNominee(addNomineeRequest.getNomineeMali());
+        election.getListOfNominee().add(nominee);
+        electionRepository.save(election);
+        return "Nominee added successfully..";
     }
 
     @Scheduled(cron = "0 */5 * * * *")

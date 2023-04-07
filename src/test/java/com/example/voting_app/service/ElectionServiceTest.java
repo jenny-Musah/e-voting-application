@@ -1,5 +1,6 @@
 package com.example.voting_app.service;
 
+import com.example.voting_app.data.dto.requests.AddNomineeRequest;
 import com.example.voting_app.data.dto.requests.AddVoteRequest;
 import com.example.voting_app.data.dto.requests.DeclareElectionRequest;
 import com.example.voting_app.data.dto.requests.UploadPortfolioRequest;
@@ -245,5 +246,35 @@ public class ElectionServiceTest {
 
         assertThrows(InvalidDetails.class, () -> electionService.addVote(addVoteRequest, 0));
     }
+    @Test
+    @Name("Test nominee can be added to an existing election")
+    public void testThatAdminCanAddNomineeToElection() throws MessagingException {
+        DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
+        creatElectionRequest.setElectionName("class captain election");
+        creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
+        creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
+        creatElectionRequest.setStartAt("08-04-2023");
+        creatElectionRequest.setEndsAt("09-04-2023");
+        Election election = electionService.createElection(creatElectionRequest);
+        AddNomineeRequest addNomineeRequest = new AddNomineeRequest();
+        addNomineeRequest.setNomineeMali("Funke@gmaul.com");
+        addNomineeRequest.setElectionId(election.getId());
+        assertEquals( "Nominee added successfully..",  electionService.addNominee(addNomineeRequest));
+    }
 
+     @Test
+    @Name("Test nominee can be added can not be added two times")
+    public void testThatAdminCanNotAddANomineeTwoTimes()throws MessagingException {
+         DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
+         creatElectionRequest.setElectionName("class captain election");
+         creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
+         creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
+         creatElectionRequest.setStartAt("08-04-2023");
+         creatElectionRequest.setEndsAt("09-04-2023");
+         Election election = electionService.createElection(creatElectionRequest);
+         AddNomineeRequest addNomineeRequest = new AddNomineeRequest();
+         addNomineeRequest.setNomineeMali("jennymusah99@gmail.com");
+         addNomineeRequest.setElectionId(election.getId());
+         assertThrows(InvalidDetails.class, () -> electionService.addNominee(addNomineeRequest));
+     }
 }

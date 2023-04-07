@@ -1,5 +1,6 @@
 package com.example.voting_app.service.electionService;
 
+import com.example.voting_app.data.dto.requests.AddNomineeRequest;
 import com.example.voting_app.data.dto.requests.AddVoteRequest;
 import com.example.voting_app.data.dto.requests.DeclareElectionRequest;
 import com.example.voting_app.data.dto.response.ElectionResponse;
@@ -12,4 +13,8 @@ public interface ElectionService {
 
     ElectionResponse addVote(AddVoteRequest addVoteRequest, long userId);
 
+
+    String addNominee(AddNomineeRequest addNomineeRequest) throws MessagingException;
+
 }
+

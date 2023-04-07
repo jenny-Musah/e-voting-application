@@ -129,7 +129,7 @@ request(options, function (error, response) {
 });
 ```
 #  Response from login request
-*This is a sample of the response from the Login !!!*
+*This is a sample of the response from the Login end-point !!!*
 ```
 {
     "usersId": 8,
@@ -215,7 +215,7 @@ request(options, function (error, response) {
 });
 ```
 # Response from upload portfolio request
-*This is a sample of the response from declare election end-point !!!*
+*This is a sample of the response from upload portfolio end-point !!!*
 ```
 {
     "nomineeId": 364766789385150039,
@@ -250,10 +250,40 @@ request(options, function (error, response) {
 });
 ```
 # Response from vote request
-*This is a sample of the response from declare election end-point !!!*
+*This is a sample of the response from vote end-point !!!*
 ```
 {
     "electionId": 1,
     "message": "Thank you for voting Jennifer"
 }
+```
+# Add nominee 
+*for admins only*
+1. This end-point allows admin to add nominee to an election.
+2. This end-point takes a valid election id and nominee emailAddress.
+3. This end-point does not allow nominee to be added to an election that does not exist.
+4. A code sample in Node JS using Axios is shown below
+```
+var request = require('request');
+var options = {
+  'method': 'POST',
+  'url': 'localhost:8080/api/v1/election/add/nominee',
+  'headers': {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    "electionId": 1,
+    "nomineeMali": "weytuijssn@gmail.com"
+  })
+
+};
+request(options, function (error, response) {
+  if (error) throw new Error(error);
+  console.log(response.body);
+});
+```
+# Response from add nominee request
+*This is a sample of the response from add nominee end-point !!!*
+```
+Nominee added successfully..
 ```
