@@ -33,6 +33,7 @@ public class ElectionServiceTest {
     private ElectionService electionService;
 
     @Autowired
+
     private ElectionRepository electionRepository;
     @Autowired
     private NomineeService nomineeService;
