@@ -17,15 +17,5 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AdminLoginRequest adminLoginRequest){
-        return new ResponseEntity<>(adminService.login(adminLoginRequest), HttpStatus.OK);
-    }
-
-    @PostMapping("/declare/election")
-    public ResponseEntity<?> declareElection(@RequestBody DeclareElectionRequest declareElectionRequest) throws MessagingException {
-        return new ResponseEntity<>(adminService.createElection(declareElectionRequest),HttpStatus.OK);
-    }
-
 
 }

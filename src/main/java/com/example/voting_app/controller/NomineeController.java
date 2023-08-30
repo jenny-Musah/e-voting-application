@@ -1,10 +1,10 @@
 package com.example.voting_app.controller;
 
-import com.example.voting_app.data.dto.requests.LoginRequest;
+
 import com.example.voting_app.data.dto.requests.UploadPortfolioRequest;
+import com.example.voting_app.data.dto.response.ApiResponse;
 import com.example.voting_app.service.nomineeService.NomineeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,12 +16,8 @@ public class NomineeController {
     @Autowired
     private NomineeService nomineeService;
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest){
-        return new ResponseEntity<>(nomineeService.login(loginRequest), HttpStatus.OK);
-    }
-    @PostMapping("/portfolio/{id}")
-    public ResponseEntity<?> uploadPortfolio(@RequestBody UploadPortfolioRequest uploadPortfolioRequest,@PathVariable long id){
-        return new ResponseEntity<>(nomineeService.uploadPortfolio(uploadPortfolioRequest,id), HttpStatus.OK);
+    @PostMapping("/portfolio")
+    public ResponseEntity<ApiResponse> uploadPortfolio(@RequestBody UploadPortfolioRequest uploadPortfolioRequest,@RequestParam("id") long id){
+        return ResponseEntity.ok(nomineeService.uploadPortfolio(uploadPortfolioRequest,id));
     }
 }

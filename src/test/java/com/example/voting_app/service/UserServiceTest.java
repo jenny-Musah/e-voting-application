@@ -4,7 +4,10 @@ import com.example.voting_app.data.dto.requests.LoginRequest;
 import com.example.voting_app.data.dto.requests.UserRegisterRequest;
 import com.example.voting_app.data.dto.response.LoginResponse;
 import com.example.voting_app.data.dto.response.Response;
+import com.example.voting_app.data.models.User;
 import com.example.voting_app.data.repository.UserRepository;
+import com.example.voting_app.service.adminService.AdminService;
+import com.example.voting_app.service.nomineeService.NomineeService;
 import com.example.voting_app.service.userService.UserService;
 import com.example.voting_app.utils.exceptions.InvalidDetails;
 import jakarta.mail.MessagingException;
@@ -31,9 +34,17 @@ public class UserServiceTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private NomineeService nomineeService;
+
+    @Autowired
+    private AdminService adminService;
+
     @BeforeEach
     @Name("Clears the database before each test")
     public void tearDown(){
+        adminService.deleteAll();
+        nomineeService.deleteAll();
         userRepository.deleteAll();
     }
 
@@ -45,8 +56,8 @@ public class UserServiceTest {
         userRegisterRequest = new UserRegisterRequest();
         userRegisterRequest.setPassword("Jennymush#123");
         userRegisterRequest.setEmailAddress("jennymusah99@gmail.com");
-        Response response = userService.registerUser(userRegisterRequest);
-        assertEquals("Registration successful, check your mail for login details", response.getMessage());
+        User user = (User) userService.registerUser(userRegisterRequest).getData();
+        assertEquals(user.getEmailAddress(), userRegisterRequest.getEmailAddress());
     }
 
     @Test
@@ -64,12 +75,12 @@ public class UserServiceTest {
         userRegisterRequest = new UserRegisterRequest();
         userRegisterRequest.setPassword("Jennymush#123");
         userRegisterRequest.setEmailAddress("jennymusah99@gmail.com");
-        Response response = userService.registerUser(userRegisterRequest);
+        User user = (User) userService.registerUser(userRegisterRequest).getData();
         LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setLoginId(response.getLoginId());
+        loginRequest.setLoginId(user.getLoginId());
         loginRequest.setPassword("Jennymush#123");
-        LoginResponse response2 = userService.login(loginRequest);
-        assertEquals("Login successful", response2.getMessage());
+       user = (User) userService.login(loginRequest).getData();
+        assertEquals(loginRequest.getLoginId(), user.getLoginId());
     }
     @Test
     @Name("Test that user can not login with invalid login id")
@@ -87,9 +98,9 @@ public class UserServiceTest {
         userRegisterRequest = new UserRegisterRequest();
         userRegisterRequest.setPassword("Jennymush#123");
         userRegisterRequest.setEmailAddress("jennymusah99@gmail.com");
-        Response response = userService.registerUser(userRegisterRequest);
+        User user = (User) userService.registerUser(userRegisterRequest).getData();
         LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setLoginId(response.getLoginId());
+        loginRequest.setLoginId(user.getLoginId());
         loginRequest.setPassword("Jennymu");
         assertThrows(InvalidDetails.class, () -> userService.login(loginRequest));
     }

@@ -3,6 +3,7 @@ package com.example.voting_app.service.electionService;
 import com.example.voting_app.data.dto.requests.AddNomineeRequest;
 import com.example.voting_app.data.dto.requests.AddVoteRequest;
 import com.example.voting_app.data.dto.requests.DeclareElectionRequest;
+import com.example.voting_app.data.dto.response.ApiResponse;
 import com.example.voting_app.data.dto.response.ElectionResponse;
 import com.example.voting_app.data.models.Election;
 import com.example.voting_app.data.models.Nominee;
@@ -11,9 +12,11 @@ import com.example.voting_app.data.repository.ElectionRepository;
 import com.example.voting_app.service.nomineeService.NomineePortfolioService;
 import com.example.voting_app.service.nomineeService.NomineeService;
 import com.example.voting_app.service.votersService.VotersService;
+import com.example.voting_app.utils.ElectionConstant;
+import com.example.voting_app.utils.GeneratedResponse;
 import com.example.voting_app.utils.Validator;
+import com.example.voting_app.utils.exceptions.ElectionException;
 import com.example.voting_app.utils.exceptions.InvalidDetails;
-import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -41,50 +45,67 @@ public class ElectionServiceImpl implements ElectionService{
     private NomineePortfolioService nomineePortfolioService;
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     @Override
-    public Election createElection(DeclareElectionRequest declareElectionRequest) throws MessagingException {
-        if(!validateDate(declareElectionRequest)) throw new InvalidDetails("Invalid date format");
-        if(LocalDate.parse(declareElectionRequest.getStartAt(),formatter).isBefore(LocalDate.now())
-        || LocalDate.parse(declareElectionRequest.getEndsAt(),formatter).isBefore(LocalDate.now())) throw new InvalidDetails("date selected is not valid");
+    public ApiResponse createElection(DeclareElectionRequest declareElectionRequest){
+        validateDate(declareElectionRequest);
+        Election election = buildElectionObject(declareElectionRequest);
+        return GeneratedResponse.okResponse(electionRepository.save(election));
+    }
+
+    private Election buildElectionObject(DeclareElectionRequest declareElectionRequest) {
         Election election = new Election();
         election.setElectionName(declareElectionRequest.getElectionName());
         election.setStartAt(LocalDate.parse(declareElectionRequest.getStartAt(),formatter));
         election.setEndAt(LocalDate.parse(declareElectionRequest.getEndsAt(),formatter));
         for(String nomineeEmail : declareElectionRequest.getListOfNominee()){
-            if(nomineeService.findNominee(nomineeEmail) != null) throw new InvalidDetails("Nominee is already added");
+            if(findNominee(election, nomineeEmail) != null) throw new InvalidDetails("Nominee is already added");
             Nominee nominee = nomineeService.addNominee(nomineeEmail);
             election.getListOfNominee().add(nominee);
         }
-        return electionRepository.save(election);
+        return election;
     }
 
-    @Override public ElectionResponse addVote(AddVoteRequest addVoteRequest, long userId) {
-        VoterCard voterCard = votersService.findVoterCard(userId);
-        Election declaredElection = electionRepository.findById(addVoteRequest.getElectionId()).orElseThrow(() -> new InvalidDetails("Election id: " + addVoteRequest.getElectionId() + "\n Is invalid"));
-        if(!declaredElection.isActivated())return new ElectionResponse(declaredElection.getId(),declaredElection.getElectionName() +", as not yet been opened to voters");
-        for (VoterCard voterCard1 : declaredElection.getListOfVoters()){
-            if(voterCard1.getVotersId() == voterCard.getVotersId()) throw new InvalidDetails("Sorry, vote can be casted just once");
+    private Nominee findNominee(Election election, String nomineeEmail) {
+        if(!election.getListOfNominee().isEmpty()) {
+            for (Nominee nominee : election.getListOfNominee()) {
+                if (nominee.getUser().getEmailAddress().equals(nomineeEmail)) return nominee;
+            }
         }
+        return null;
+    }
+
+    @Override public ApiResponse addVote(AddVoteRequest addVoteRequest, long userId) {
+        VoterCard voterCard = votersService.findVoterCard(userId);
+        Election declaredElection = findElection(addVoteRequest.getElectionId());
+        if(!declaredElection.isActivated())throw new ElectionException(ElectionConstant.ELECTION_NON_ACTIVATED);
+        for (VoterCard voterCard1 : declaredElection.getListOfVoters())
+            if(voterCard1.getVotersId() == voterCard.getVotersId()) throw new InvalidDetails(ElectionConstant.CAN_NOT_VOTE);
         for(Nominee nominee : declaredElection.getListOfNominee()){
-            if(nominee.getNomineePortfolio() ==null) throw new InvalidDetails("Nominee has no portfolio therefore can not be voted has no nominee id exist");
+            if(nominee.getNomineePortfolio() == null ) continue;
             if(nominee.getNomineePortfolio().getNomineeId() == addVoteRequest.getNomineeId()){
                 nomineePortfolioService.addVote(nominee.getNomineePortfolio().getNomineeId());
                 declaredElection.getListOfVoters().add(voterCard);
-                electionRepository.save(declaredElection);
-                return new ElectionResponse(declaredElection.getId(),"Thank you for voting " + nominee.getNomineePortfolio().getFirstName());
+               return GeneratedResponse.okResponse( electionRepository.save(declaredElection) );
             }
         }
-        return new ElectionResponse(declaredElection.getId(),addVoteRequest.getNomineeId() + ", is invalid.");
+       throw new ElectionException(ElectionConstant.INVALID_NOMINEE);
     }
 
-    @Override public String addNominee(AddNomineeRequest addNomineeRequest) throws MessagingException {
-        Election election = electionRepository.findById(addNomineeRequest.getElectionId()).orElseThrow(() ->
-                new InvalidDetails("Election with " + addNomineeRequest.getElectionId() +" does not exist"));
+    @Override public ApiResponse addNominee(AddNomineeRequest addNomineeRequest) {
+        Election election = findElection(addNomineeRequest.getElectionId());
         for(Nominee nominee : election.getListOfNominee())
-            if(Objects.equals(nominee.getEmail(), addNomineeRequest.getNomineeMali())) throw  new InvalidDetails("Nominee is already added");
-        Nominee nominee = nomineeService.addNominee(addNomineeRequest.getNomineeMali());
+            if(Objects.equals(nominee.getUser().getEmailAddress(), addNomineeRequest.getNomineeMail())) throw  new InvalidDetails(ElectionConstant.NOMINEE_ALREADY_EXIST);
+        Nominee nominee = nomineeService.addNominee(addNomineeRequest.getNomineeMail());
         election.getListOfNominee().add(nominee);
-        electionRepository.save(election);
-        return "Nominee added successfully..";
+        return GeneratedResponse.okResponse( electionRepository.save(election));
+    }
+
+    @Override public List<Election> findAllElections() {
+        return electionRepository.findAll();
+    }
+
+    private Election findElection(long electionId) {
+        return electionRepository.findById(electionId).orElseThrow(() ->
+                new InvalidDetails("Election with " + electionId +" does not exist"));
     }
 
     @Scheduled(cron = "0 */5 * * * *")
@@ -102,10 +123,10 @@ public class ElectionServiceImpl implements ElectionService{
     }
     }
 
-    private boolean validateDate(DeclareElectionRequest declareElectionRequest){
-        if(!Validator.isDateValid(declareElectionRequest.getEndsAt()) ||
-        !Validator.isDateValid(declareElectionRequest.getStartAt())) return false;
-        return true;
+    private void validateDate(DeclareElectionRequest declareElectionRequest){
+        if(!Validator.isDateValid(declareElectionRequest.getEndsAt()) || !Validator.isDateValid(declareElectionRequest.getStartAt())) throw new InvalidDetails(ElectionConstant.INVALID_DATE);
+        if(LocalDate.parse(declareElectionRequest.getStartAt(),formatter).isBefore(LocalDate.now())
+                || LocalDate.parse(declareElectionRequest.getEndsAt(),formatter).isBefore(LocalDate.now())) throw new InvalidDetails(ElectionConstant.INVALID_DATE);
     }
 
 }

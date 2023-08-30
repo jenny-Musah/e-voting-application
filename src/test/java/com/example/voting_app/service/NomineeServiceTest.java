@@ -5,6 +5,7 @@ import com.example.voting_app.data.dto.requests.UploadPortfolioRequest;
 import com.example.voting_app.data.models.Nominee;
 import com.example.voting_app.data.repository.NomineeRepository;
 import com.example.voting_app.service.nomineeService.NomineeService;
+import com.example.voting_app.service.userService.UserService;
 import com.example.voting_app.utils.exceptions.InvalidDetails;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
@@ -26,15 +27,18 @@ public class NomineeServiceTest {
     @Autowired
     private NomineeRepository nomineeRepository;
 
+    @Autowired
+    private UserService userService;
+
     @BeforeEach
     public void setUp(){
         nomineeRepository.deleteAll();
     }
 
     @Test
-    public void testThatNomineeCanBeCreated() throws MessagingException {
+    public void testThatNomineeCanBeCreated(){
         Nominee nominee = nomineeService.addNominee("jennymusah@67.gmail.com");
-        assertEquals("jennymusah@67.gmail.com", nominee.getEmail());
+        assertEquals("jennymusah@67.gmail.com", nominee.getUser().getEmailAddress());
     }
 
     @Test
@@ -45,11 +49,11 @@ public class NomineeServiceTest {
 
     @Test
     @Name("Test that nominee can not login with invalid details")
-    public void testThatNomineeCanLogin() throws MessagingException {;
+    public void testThatNomineeCanLogin(){;
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setLoginId(1);
         loginRequest.setPassword("4e84cd2e-9NOMI#@");
-       assertThrows( InvalidDetails.class,() ->nomineeService.login(loginRequest));
+       assertThrows( InvalidDetails.class,() ->userService.login(loginRequest));
     }
     @Test
     @Name("Test that nominee can upload portfolio")
@@ -59,11 +63,13 @@ public class NomineeServiceTest {
         UploadPortfolioRequest uploadPortfolioRequest = new UploadPortfolioRequest(
                 "Jennifer", "Musah", "Class captain","i love leadership", "Doctor"
         );
-       assertEquals("Portfolio updated successfully", nomineeService.uploadPortfolio(uploadPortfolioRequest,nominee.getId()).getMessage());
+        nominee = (Nominee) nomineeService.uploadPortfolio(uploadPortfolioRequest,nominee.getId()).getData();
+
+       assertNotNull(nominee.getNomineePortfolio());
     }
     @Test
     @Name("Test that nominee vote can be added")
-    public void testThatNomineeVotesCanBeAdded() throws MessagingException {
+    public void testThatNomineeVotesCanBeAdded(){
         Nominee nominee = nomineeService.addNominee("jennymusah@67.gmail.com");
         UploadPortfolioRequest uploadPortfolioRequest = new UploadPortfolioRequest(
                 "Jennifer", "Musah", "Class captain","i love leadership", "Doctor");
@@ -73,7 +79,7 @@ public class NomineeServiceTest {
     }
     @Test
     @Name("Test that nominee without a portfolio can not be voted ")
-    public void testThatNomineeWithOutPortfolioCanNotBeVoted() throws MessagingException {
+    public void testThatNomineeWithOutPortfolioCanNotBeVoted(){
         Nominee nominee = nomineeService.addNominee("jennymusah@67.gmail.com");
         assertThrows(InvalidDetails.class, () -> nomineeService.addVote(178930020L));
     }

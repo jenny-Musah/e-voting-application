@@ -4,7 +4,7 @@ import jakarta.mail.MessagingException;
 
 public interface MailSender {
 
-    void send(String to, String email, String subject) throws MessagingException;
+    void send(String to, String email, String subject);
 
     String buildEmail(long loginID, String password);
 
