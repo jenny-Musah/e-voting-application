@@ -1,5 +1,6 @@
 package com.example.voting_app.data.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -18,6 +19,7 @@ public class User {
     private long id;
     private long loginId;
     private String emailAddress;
+    @JsonIgnore
     private String password;
     @OneToOne
     @Enumerated

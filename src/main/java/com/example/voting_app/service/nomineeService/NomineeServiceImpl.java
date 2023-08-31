@@ -41,12 +41,14 @@ public class NomineeServiceImpl implements NomineeService{
     private UserService userService;
     @Override
     public Nominee addNominee(String  nomineeEmails)  {
+
         if(!Validator.isEmailAddressValid(nomineeEmails) || userService.findUserByEmail(nomineeEmails) != null) throw new InvalidDetails("Invalid email address");
         String nomineePassword =  UUID.randomUUID().toString().subSequence(0,10).toString().concat("NOMI#@");
-        Nominee savedNominee = nomineeRepository.save(createNominee(nomineeEmails,nomineePassword));
+        Nominee savedNominee = createNominee(nomineeEmails,nomineePassword);
         mailSender.send(nomineeEmails,mailSender.buildEmail(savedNominee.getUser().getLoginId(),nomineePassword)
         ,"Nominee login details");
         return savedNominee;
+
     }
 
     @Override

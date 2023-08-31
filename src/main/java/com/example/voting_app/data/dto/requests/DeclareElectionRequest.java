@@ -9,7 +9,7 @@ import java.util.List;
 public class DeclareElectionRequest {
 
     private String electionName;
-    private List<String> listOfNominee = new ArrayList<>();
+    private List<String> listOfNominee;
     private String startAt;
     private String endsAt;
 }
