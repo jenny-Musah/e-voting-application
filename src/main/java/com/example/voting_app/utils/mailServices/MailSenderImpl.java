@@ -1,5 +1,7 @@
 package com.example.voting_app.utils.mailServices;
 
+import com.example.voting_app.utils.ElectionConstant;
+import com.example.voting_app.utils.exceptions.ElectionException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,14 +18,18 @@ public class MailSenderImpl implements MailSender {
 
     @Override
     @Async
-    public void send(String to, String email, String subject) throws MessagingException {
-        MimeMessage mailMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mailMessage, "utf-8");
-        mimeMessageHelper.setSubject(subject);
-        mimeMessageHelper.setTo(to);
-        mimeMessageHelper.setFrom("E-voting@gmail.com");
-        mimeMessageHelper.setText(email, true);
-        javaMailSender.send(mailMessage);
+    public void send(String to, String email, String subject){
+        try {
+            MimeMessage mailMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mailMessage, "utf-8");
+            mimeMessageHelper.setSubject(subject);
+            mimeMessageHelper.setTo(to);
+            mimeMessageHelper.setFrom("E-voting@gmail.com");
+            mimeMessageHelper.setText(email, true);
+            javaMailSender.send(mailMessage);
+        }catch (MessagingException e){
+            throw  new ElectionException(ElectionConstant.MAIL_ERROR);
+        }
     }
 
     @Override

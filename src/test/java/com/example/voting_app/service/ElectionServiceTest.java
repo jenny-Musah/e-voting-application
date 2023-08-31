@@ -12,6 +12,8 @@ import com.example.voting_app.data.repository.ElectionRepository;
 
 import com.example.voting_app.service.electionService.ElectionService;
 import com.example.voting_app.service.nomineeService.NomineeService;
+import com.example.voting_app.utils.ElectionConstant;
+import com.example.voting_app.utils.exceptions.ElectionException;
 import com.example.voting_app.utils.exceptions.InvalidDetails;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
@@ -37,26 +39,32 @@ public class ElectionServiceTest {
     private ElectionRepository electionRepository;
     @Autowired
     private NomineeService nomineeService;
+
+    private Election election;
     @BeforeEach
     public void setUp(){
-        electionRepository.deleteAll();
-    }
 
-    @Test
-    @Name("Test that election can be created")
-    public void testThatElectionCanBeCreated() throws MessagingException {
+        electionRepository.deleteAll();
+
         DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
         creatElectionRequest.setElectionName("class captain election");
         creatElectionRequest.getListOfNominee().add( "jennymusah99@gmail.com");
         creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
-        creatElectionRequest.setStartAt("10-04-2023");
-        creatElectionRequest.setEndsAt("10-04-2023");
-        Election election = electionService.createElection(creatElectionRequest);
+        creatElectionRequest.setStartAt("10-12-2023");
+        creatElectionRequest.setEndsAt("10-12-2023");
+       election = (Election) electionService.createElection(creatElectionRequest).getData();
+
+    }
+
+
+    @Test
+    @Name("Test that election can be created")
+    public void testThatElectionCanBeCreated(){
         assertEquals("class captain election", election.getElectionName());
     }
     @Test
     @Name("Test that election can not be created on an invalid day")
-    public void testThatElectionCanBeCreatedOnInvalidDate() throws MessagingException {
+    public void testThatElectionCanNotBeCreatedWithInvalidDate() throws MessagingException {
         DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
         creatElectionRequest.setElectionName("class captain election");
         creatElectionRequest.getListOfNominee().add( "jennymusah99@gmail.com");
@@ -68,23 +76,14 @@ public class ElectionServiceTest {
 
     @Test
     @Name("Test that app users can not vote when election is not activated")
-    public void testThatAppUsersCanNotVoteWhenElectionIsNotActive() throws MessagingException {
-        DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
-        creatElectionRequest.setElectionName("class captain election");
-        creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
-        creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
-        creatElectionRequest.setStartAt("08-04-2023");
-        creatElectionRequest.setEndsAt("09-04-2023");
-        Election election = electionService.createElection(creatElectionRequest);
+    public void testThatAppUsersCanNotVoteWhenElectionIsNotActive(){
         AddVoteRequest addVoteRequest = new AddVoteRequest();
-        long userId = 0;
-        for(Nominee nominee : election.getListOfNominee()){
-          userId = nominee.getId();
-          break;
-        }
-      addVoteRequest.setNomineeId(0); addVoteRequest.setElectionId(election.getId());
-      ElectionResponse response = electionService.addVote(addVoteRequest, userId);
-      assertEquals("class captain election, as not yet been opened to voters", response.getMessage());
+        UploadPortfolioRequest uploadPortfolioRequest = new UploadPortfolioRequest(
+                "Jennifer", "Musah", "Class captain","i love leadership", "Doctor"
+        );
+        Nominee nominee = (Nominee) nomineeService.uploadPortfolio(uploadPortfolioRequest,election.getListOfNominee().get(0).getId()).getData();
+        addVoteRequest.setNomineeId(nominee.getNomineePortfolio().getNomineeId()); addVoteRequest.setElectionId(election.getId());
+      assertThrows(ElectionException.class, () -> electionService.addVote(addVoteRequest, election.getListOfNominee().get(0).getUser().getId()));
     }
     @Test
     @Name("Test that nominee can not be added to twice to a particular election")
@@ -94,187 +93,97 @@ public class ElectionServiceTest {
         creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
         creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
         creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
-        creatElectionRequest.setStartAt("08-04-2023");
-        creatElectionRequest.setEndsAt("09-04-2023");
+        creatElectionRequest.setStartAt("08-12-2023");
+        creatElectionRequest.setEndsAt("09-12-2023");
         assertThrows(InvalidDetails.class,() -> electionService.createElection(creatElectionRequest));
     }
     @Test
     @Name("Test that app users can not vote for nominee with no portfolio")
-    public void testThatAppUsersCanVoteUserWithNoPortfolio() throws MessagingException {
-        DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
-        creatElectionRequest.setElectionName("class captain election");
-        creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
-        creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
-        creatElectionRequest.setStartAt("08-04-2023");
-        creatElectionRequest.setEndsAt("09-04-2023");
-        Election election = electionService.createElection(creatElectionRequest);
+    public void testThatAppUsersCanNotVoteUserWithNoPortfolio(){
         election.setActivated(true);
         AddVoteRequest addVoteRequest = new AddVoteRequest();
-        long userId = 0;
-        for(Nominee nominee : election.getListOfNominee()){
-            userId = nominee.getId();
 
-            break;
-        }
-        addVoteRequest.setNomineeId(56799L); addVoteRequest.setElectionId(election.getId());
-        long finalUserId = userId;
-        assertThrows(InvalidDetails.class, () ->  electionService.addVote(addVoteRequest, finalUserId));
+        addVoteRequest.setNomineeId(90L); addVoteRequest.setElectionId(election.getId());
+        assertThrows(ElectionException.class, () ->  electionService.addVote(addVoteRequest, election.getListOfNominee().get(0).getUser().getId()));
     }
 
   @Test
   @Name("Test app users can vote for a nominee when the nominee has uploaded portfolio and election is activated")
-  public void testThatAppUsersCanVoteWhenElectionIsActivated() throws MessagingException {
-      DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
-      creatElectionRequest.setElectionName("class captain election");
-      creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
-      creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
-      creatElectionRequest.setStartAt("08-04-2023");
-      creatElectionRequest.setEndsAt("09-04-2023");
-      Election election = electionService.createElection(creatElectionRequest);
+  public void testThatAppUsersCanVoteWhenElectionIsActivated(){
       election.setActivated(true);
       AddVoteRequest addVoteRequest = new AddVoteRequest();
-      long userId = 0;
-      for(Nominee nominee : election.getListOfNominee()){
-          userId = nominee.getId();
-          break;
-      }
       UploadPortfolioRequest uploadPortfolioRequest = new UploadPortfolioRequest(
               "Jennifer", "Musah", "Class captain","i love leadership", "Doctor"
       );
-     UploadPortfolioResponse uploadPortfolioResponse = nomineeService.uploadPortfolio(uploadPortfolioRequest,userId);
-      addVoteRequest.setNomineeId(uploadPortfolioResponse.getNomineeId()); addVoteRequest.setElectionId(election.getId());
-      ElectionResponse response = electionService.addVote(addVoteRequest, userId);
-      assertEquals("Thank you for voting Jennifer", response.getMessage());
+      Nominee nominee = (Nominee) nomineeService.uploadPortfolio(uploadPortfolioRequest,election.getListOfNominee().get(0).getId()).getData();
+      addVoteRequest.setNomineeId(nominee.getNomineePortfolio().getNomineeId()); addVoteRequest.setElectionId(election.getId());
+      election =(Election) electionService.addVote(addVoteRequest, election.getListOfNominee().get(1).getUser().getId()).getData();
+      assertEquals(1, election.getListOfVoters().size());
   }
 @Test
 @Name("Test that nominee vote counts increases per vote")
-  public void testThatNomineeVotesIncreasePerVote() throws MessagingException {
-    DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
-    creatElectionRequest.setElectionName("class captain election");
-    creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
-    creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
-    creatElectionRequest.setStartAt("08-04-2023");
-    creatElectionRequest.setEndsAt("09-04-2023");
-    Election election = electionService.createElection(creatElectionRequest);
+  public void testThatNomineeVotesIncreasePerVote() {
     election.setActivated(true);
     AddVoteRequest addVoteRequest = new AddVoteRequest();
-    long userId = 0;
-    for(Nominee nominee : election.getListOfNominee()){
-        userId = nominee.getId();
-        break;
-    }
     UploadPortfolioRequest uploadPortfolioRequest = new UploadPortfolioRequest(
             "Jennifer", "Musah", "Class captain","i love leadership", "Doctor"
     );
-    UploadPortfolioResponse uploadPortfolioResponse = nomineeService.uploadPortfolio(uploadPortfolioRequest,userId);
-    addVoteRequest.setNomineeId(uploadPortfolioResponse.getNomineeId()); addVoteRequest.setElectionId(election.getId());
-    ElectionResponse response = electionService.addVote(addVoteRequest, userId);
-    assertEquals("Thank you for voting Jennifer", response.getMessage());
-    long vote = 0;
-    for(Nominee nominee : election.getListOfNominee()){
-        vote = nominee.getNomineePortfolio().getVotes();
-        break;
-    }
-    assertEquals(1,vote);
+    Nominee nominee = (Nominee) nomineeService.uploadPortfolio(uploadPortfolioRequest,election.getListOfNominee().get(0).getId()).getData();
+    addVoteRequest.setNomineeId(nominee.getNomineePortfolio().getNomineeId()); addVoteRequest.setElectionId(election.getId());
+    election = (Election) electionService.addVote(addVoteRequest,election.getListOfNominee().get(1).getUser().getId()).getData();
+    assertEquals(1,election.getListOfNominee().get(0).getNomineePortfolio().getVotes());
   }
 
   @Test
   @Name("Test that app users can only vote once per election")
-    public void testAppUsersCanOnlyVoteOnceInElection() throws MessagingException {
-      DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
-      creatElectionRequest.setElectionName("class captain election");
-      creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
-      creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
-      creatElectionRequest.setStartAt("08-04-2023");
-      creatElectionRequest.setEndsAt("09-04-2023");
-      Election election = electionService.createElection(creatElectionRequest);
+    public void testAppUsersCanOnlyVoteOnceInElection(){
       election.setActivated(true);
       AddVoteRequest addVoteRequest = new AddVoteRequest();
-      long userId = 0;
-      for(Nominee nominee : election.getListOfNominee()){
-          userId = nominee.getId();
-          break;
-      }
       UploadPortfolioRequest uploadPortfolioRequest = new UploadPortfolioRequest(
               "Jennifer", "Musah", "Class captain","i love leadership", "Doctor"
       );
-      UploadPortfolioResponse uploadPortfolioResponse = nomineeService.uploadPortfolio(uploadPortfolioRequest,userId);
-      addVoteRequest.setNomineeId(uploadPortfolioResponse.getNomineeId()); addVoteRequest.setElectionId(election.getId());
-      ElectionResponse response = electionService.addVote(addVoteRequest, userId);
-      assertEquals("Thank you for voting Jennifer", response.getMessage());
-      long finalUserId = userId;
-      assertThrows(InvalidDetails.class, () -> electionService.addVote(addVoteRequest, finalUserId));
+      Nominee nominee =(Nominee) nomineeService.uploadPortfolio(uploadPortfolioRequest, election.getListOfNominee().get(1).getId()).getData();
+      addVoteRequest.setNomineeId(nominee.getNomineePortfolio().getNomineeId()); addVoteRequest.setElectionId(election.getId());
+      election = (Election) electionService.addVote(addVoteRequest, election.getListOfNominee().get(1).getUser().getId()).getData();
+      assertThrows(InvalidDetails.class, () -> electionService.addVote(addVoteRequest, election.getListOfNominee().get(1).getUser().getId()));
   }
 
   @Test
   @Name("Test that app users can not vote with invalid election id")
-    public void testThatAppUserCanNotVoteWithInvalidElectionId() throws MessagingException {
-      DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
-      creatElectionRequest.setElectionName("class captain election");
-      creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
-      creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
-      creatElectionRequest.setStartAt("08-04-2023");
-      creatElectionRequest.setEndsAt("09-04-2023");
-      Election election = electionService.createElection(creatElectionRequest);
+    public void testThatAppUserCanNotVoteWithInvalidElectionId() {
       election.setActivated(true);
       AddVoteRequest addVoteRequest = new AddVoteRequest();
-      long userId = 0;
-      for(Nominee nominee : election.getListOfNominee()){
-          userId = nominee.getId();
-          break;
-      }
       UploadPortfolioRequest uploadPortfolioRequest = new UploadPortfolioRequest(
               "Jennifer", "Musah", "Class captain","i love leadership", "Doctor"
       );
-      UploadPortfolioResponse uploadPortfolioResponse = nomineeService.uploadPortfolio(uploadPortfolioRequest,userId);
-      addVoteRequest.setNomineeId(uploadPortfolioResponse.getNomineeId()); addVoteRequest.setElectionId(election.getId());
-      long finalUserId = 34556L;
-      assertThrows(InvalidDetails.class, () -> electionService.addVote(addVoteRequest, finalUserId));
+      Nominee nominee =(Nominee) nomineeService.uploadPortfolio(uploadPortfolioRequest, election.getListOfNominee().get(1).getId()).getData();
+      addVoteRequest.setNomineeId(nominee.getNomineePortfolio().getNomineeId()); addVoteRequest.setElectionId(234445L);
+      assertThrows(InvalidDetails.class, () -> electionService.addVote(addVoteRequest, nominee.getUser().getId()));
   }
     @Test
     @Name("Test that app users can not vote with invalid nomineeId")
-    public void testThatAppUserCanNotVoteWithInvalidNomineeId() throws MessagingException {
-        DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
-        creatElectionRequest.setElectionName("class captain election");
-        creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
-        creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
-        creatElectionRequest.setStartAt("08-04-2023");
-        creatElectionRequest.setEndsAt("09-04-2023");
-        Election election = electionService.createElection(creatElectionRequest);
+    public void testThatAppUserCanNotVoteWithInvalidNomineeId(){
         election.setActivated(true);
         AddVoteRequest addVoteRequest = new AddVoteRequest();
         addVoteRequest.setNomineeId(0); addVoteRequest.setElectionId(election.getId());
 
-        assertThrows(InvalidDetails.class, () -> electionService.addVote(addVoteRequest, 0));
+        assertThrows(ElectionException.class, () -> electionService.addVote(addVoteRequest, election.getListOfNominee().get(1).getUser().getId()));
     }
     @Test
     @Name("Test nominee can be added to an existing election")
     public void testThatAdminCanAddNomineeToElection() throws MessagingException {
-        DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
-        creatElectionRequest.setElectionName("class captain election");
-        creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
-        creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
-        creatElectionRequest.setStartAt("08-04-2023");
-        creatElectionRequest.setEndsAt("09-04-2023");
-        Election election = electionService.createElection(creatElectionRequest);
         AddNomineeRequest addNomineeRequest = new AddNomineeRequest();
-        addNomineeRequest.setNomineeMali("Funke@gmaul.com");
+        addNomineeRequest.setNomineeMail("Funke@gmaul.com");
         addNomineeRequest.setElectionId(election.getId());
-        assertEquals( "Nominee added successfully..",  electionService.addNominee(addNomineeRequest));
+        election = (Election)  electionService.addNominee(addNomineeRequest).getData();
+        assertEquals( 3, election.getListOfNominee().size());
     }
 
      @Test
     @Name("Test nominee can be added can not be added two times")
-    public void testThatAdminCanNotAddANomineeTwoTimes()throws MessagingException {
-         DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
-         creatElectionRequest.setElectionName("class captain election");
-         creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
-         creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
-         creatElectionRequest.setStartAt("08-04-2023");
-         creatElectionRequest.setEndsAt("09-04-2023");
-         Election election = electionService.createElection(creatElectionRequest);
+    public void testThatAdminCanNotAddANomineeTwoTimes() {
          AddNomineeRequest addNomineeRequest = new AddNomineeRequest();
-         addNomineeRequest.setNomineeMali("jennymusah99@gmail.com");
+         addNomineeRequest.setNomineeMail("jennymusah99@gmail.com");
          addNomineeRequest.setElectionId(election.getId());
          assertThrows(InvalidDetails.class, () -> electionService.addNominee(addNomineeRequest));
      }

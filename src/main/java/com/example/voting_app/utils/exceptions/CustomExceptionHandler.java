@@ -1,5 +1,6 @@
 package com.example.voting_app.utils.exceptions;
 
+import com.example.voting_app.utils.GeneratedResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,7 +11,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity<?> apiExceptionHandler(Exception e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
+        return ResponseEntity.badRequest().body(GeneratedResponse.badResponse(e.getMessage()));
     }
 
 }

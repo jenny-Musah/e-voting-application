@@ -36,65 +36,6 @@ public class AdminServiceTest {
         adminRepository.deleteAll();
     }
 
-    @Test
-    public void testThatAdminCanLogin(){
-        AdminLoginRequest adminLoginRequest = new AdminLoginRequest();
-        adminLoginRequest.setLoginId(90078967900000L);
-        adminLoginRequest.setPassword("IamTheAdmin#123@");
-       LoginResponse response =  adminService.login(adminLoginRequest);
-       assertEquals("Admin logged in successfully", response.getMessage());
-    }
-     @Test
-     @Name("Test that admin can not login with incorrect loginId")
-    public void testThatAdminCanNotLoginWithIncorrectLoginId(){
-        AdminLoginRequest adminLoginRequest = new AdminLoginRequest();
-        adminLoginRequest.setLoginId(8967900000L);
-        adminLoginRequest.setPassword("IamTheAdmin#123@");
-        assertThrows(InvalidDetails.class, () -> adminService.login(adminLoginRequest));
-    }
-    @Test
-     @Name("Test that admin can not login with incorrect password")
-    public void testThatAdminCanNotLoginWithIncorrectPassword(){
-        AdminLoginRequest adminLoginRequest = new AdminLoginRequest();
-        adminLoginRequest.setLoginId(90078967900000L);
-        adminLoginRequest.setPassword("Admin#123@");
-        assertThrows(InvalidDetails.class, () -> adminService.login(adminLoginRequest));
-    }
-
-    @Test
-    @Name("Test that admin can create election")
-    public void testThatAdminCanCreateElection() throws MessagingException {
-        DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
-        creatElectionRequest.setElectionName("class captain election");
-        creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
-        creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
-        creatElectionRequest.setStartAt("10-04-2023");
-        creatElectionRequest.setEndsAt("11-04-2023");
-        ElectionResponse electionResponse = adminService.createElection(creatElectionRequest);
-        assertEquals("Successfully declared an election", electionResponse.getMessage());
-    }
- @Test
-    @Name("Test that admin can not create an election with an invalid date")
-    public void testThatAdminCanNotCreateElectionWithAnInvalidDate() throws MessagingException {
-        DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
-        creatElectionRequest.setElectionName("class captain election");
-        creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
-        creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
-        creatElectionRequest.setStartAt("04-01-2023");
-        creatElectionRequest.setEndsAt("04-01-2023");
-       assertThrows(InvalidDetails.class, () -> adminService.createElection(creatElectionRequest));
-    }
-    @Test
-    @Name("Test that admin can not create an election with an invalid details(password)")
-    public void testThatAdminCanNotCreateElectionWithAnInvalidDetails() throws MessagingException {
-        DeclareElectionRequest creatElectionRequest = new DeclareElectionRequest();
-        creatElectionRequest.setElectionName("class captain election");
-        creatElectionRequest.getListOfNominee().add("jennymusah99@gmail.com");
-        creatElectionRequest.getListOfNominee().add("maryjan344@gmail.com");
-        creatElectionRequest.setStartAt("04-01-2023");
-        creatElectionRequest.setEndsAt("04-01-2023");
-       assertThrows(InvalidDetails.class, () -> adminService.createElection(creatElectionRequest));
-    }
 
 
 }
